@@ -64,6 +64,34 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
+            case R.id.action_month:
+                setContentView(R.layout.activity_month);
+
+                ViewPager2 vpPager1 = findViewById(R.id.vpPager1);
+                FragmentStateAdapter adapter1 = new MonthPagerAdapter(this);
+                vpPager1.setAdapter(adapter1);
+
+                vpPager1.setCurrentItem(MonthPoint - WeekPoint, false);
+
+                vpPager1.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        Calendar calendar = Calendar.getInstance();
+
+                        MonthPoint = position;
+
+                        monthPage = Integer.MAX_VALUE / 2 - position;
+
+                        calendar.add(Calendar.MONTH, -monthPage);
+
+                        year = calendar.get(Calendar.YEAR);
+                        month = calendar.get(Calendar.MONTH) + 1;
+
+                        setTitle(year + "년 " + month + "월");
+                    }
+                });
+                return true;
+
             case R.id.action_week:
                 setContentView(R.layout.activity_week);
 

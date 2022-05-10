@@ -5,11 +5,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-class WeekPagerAdapter extends FragmentStateAdapter {
-
+class MonthPagerAdapter extends FragmentStateAdapter {
     private static final int NUM_ITEMS = Integer.MAX_VALUE;
 
-    public WeekPagerAdapter(FragmentActivity fa) {
+    public MonthPagerAdapter(FragmentActivity fa) {
         super(fa);
     }
 
@@ -17,7 +16,7 @@ class WeekPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        return new WeekFragment(position);
+        return new MonthFragment(position);
     }
 
     // 전체 페이지 개수 반환
@@ -26,4 +25,3 @@ class WeekPagerAdapter extends FragmentStateAdapter {
         return NUM_ITEMS;
     }
 }
-
