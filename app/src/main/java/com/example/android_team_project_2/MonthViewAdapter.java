@@ -67,42 +67,34 @@ public class MonthViewAdapter extends BaseAdapter {
         if (check == 0)
             tv_date.setBackgroundColor(Color.GRAY);
 
+        Display display = mContext.getDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getRealMetrics(metrics);
+        int Realheight = metrics.heightPixels;
+
         Rect rect = new Rect();
         Window window = mActivity.getWindow();
         window.getDecorView().getWindowVisibleDisplayFrame(rect);
         int contentTop = window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-
-        int h = mActivity.findViewById(R.id.day_0).getHeight();
-
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-
-        display.getRealMetrics( metrics );
-        int StatusBarHeight= rect.top;
-
-        display.getRealMetrics(metrics);
-        int height = metrics.heightPixels;
-        int contentViewTop= window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-        int TitleBarHeight= contentViewTop - StatusBarHeight;
-
-
-        int statusBarHeight = 0;
-        int resourceId = mActivity.getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0)
-            statusBarHeight = mActivity.getResources().getDimensionPixelSize(resourceId);
+        int statusBarHeight = rect.top;
 
         int bottomBarHeight = 0;
         int resourceIdBottom = mActivity.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
         if (resourceIdBottom > 0)
             bottomBarHeight = mActivity.getResources().getDimensionPixelSize(resourceIdBottom);
 
-        if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-            tv_date.setHeight((height - statusBarHeight - contentTop - h - bottomBarHeight) / 6);
-        else if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-            tv_date.setHeight((height - statusBarHeight - contentTop - h) / 6);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        mActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
-        // 세로모드일 때 => 전체 크기 - 상태바 - 타이틀바 - 요일텍스트뷰 높이 - 네비게이션바 /  = 한 아이템의 높이 로 설정
-        // 가로모드일 때 네비게이션바를 빼는 부분만 수정
+        int dpi = displayMetrics.densityDpi;
+        float density = displayMetrics.density;
+
+        int Th = (int) (25 * density + 0.5);
+
+        if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            tv_date.setHeight((Realheight - statusBarHeight - contentTop - Th - bottomBarHeight) / 6);
+        else if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            tv_date.setHeight((Realheight - statusBarHeight - contentTop - Th) / 6);
 
         return convertView;
     }
