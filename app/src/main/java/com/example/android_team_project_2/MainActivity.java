@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Calendar;
 
@@ -49,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
                 setTitle(year + "년 " + month + "월");
             }
         });
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new FABClickListener());
 
     }
 
@@ -144,4 +150,10 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-}
+
+    private class FABClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            // FAB Click 이벤트 처리 구간
+        }
+    }
