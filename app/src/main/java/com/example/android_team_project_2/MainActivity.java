@@ -5,6 +5,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,10 +53,6 @@ public class MainActivity extends AppCompatActivity {
                 setTitle(year + "년 " + month + "월");
             }
         });
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new FABClickListener());
-
     }
 
     @Override
@@ -150,10 +147,12 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    private class FABClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            // FAB Click 이벤트 처리 구간
+    public void fClick(View view) {
+        switch (view.getId()) {
+            case R.id.floating:
+                Intent intent = new Intent(this, ScheduleActivity.class);
+                startActivity(intent);
+                break;
         }
     }
+}

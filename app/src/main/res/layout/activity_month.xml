@@ -71,24 +71,28 @@
             android:text="@string/day6_name" />
     </LinearLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/tv_ll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:layout_gravity="bottom|right|end"
+            android:clickable="true"
+            app:srcCompat="@android:drawable/ic_input_add"
+            android:onClick="fClick"
+            />
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/vpPager1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
-    </LinearLayout>
+    </FrameLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="16dp"
-        app:srcCompat="@android:drawable/ic_input_add" />
 </LinearLayout>
 
