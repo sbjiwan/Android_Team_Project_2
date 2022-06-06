@@ -22,6 +22,7 @@ public class WeekFragment extends Fragment {
     int test = -1;
     int xPosition;
     static int monthPoint;
+    static int Clicktime = 0;
     WeekViewAdapter weekViewAdapter;
     HourViewAdapter hourGridViewAdapter;
     HourViewAdapter hourListViewAdapter;
@@ -179,6 +180,7 @@ public class WeekFragment extends Fragment {
                     MainActivity.ClickPoint = year +"." + month +"." + (My_week_grid.get(i % 7).date);
                 }
 
+                Clicktime = i / 7;
 
                 if (test > 0) {
                     My_week_grid.remove(xPosition % 7);

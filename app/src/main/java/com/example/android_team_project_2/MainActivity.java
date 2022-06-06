@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     static String ClickPoint = "";
     static int[] CursorPoint;
     MyDBHelper myDBHelper;
+    String name = "month";
+    Intent intent;
 
     public int getMonthPoint() {
         return MonthPoint;
@@ -33,30 +35,87 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_month);
+        intent = getIntent();
 
-        ViewPager2 vpPager = findViewById(R.id.vpPager1);
-        FragmentStateAdapter adapter = new MonthPagerAdapter(this);
-        vpPager.setAdapter(adapter);
+        if(intent != null) {
+            MonthPoint = intent.getIntExtra("position", Integer.MAX_VALUE / 2);
+            name = intent.getStringExtra("type");
+        }
 
-        vpPager.setCurrentItem(MonthPoint, false);
+        if(name == null || name.equals("month")) {
+            setContentView(R.layout.activity_month);
 
-        vpPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                Calendar calendar = Calendar.getInstance();
+            ViewPager2 vpPager = findViewById(R.id.vpPager1);
+            FragmentStateAdapter adapter = new MonthPagerAdapter(this);
+            vpPager.setAdapter(adapter);
 
-                MonthPoint = position;
-                monthPage = Integer.MAX_VALUE / 2 - position;
+            vpPager.setCurrentItem(MonthPoint, false);
 
-                calendar.add(Calendar.MONTH, -monthPage);
+            vpPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    Calendar calendar = Calendar.getInstance();
 
-                year = calendar.get(Calendar.YEAR);
-                month = calendar.get(Calendar.MONTH) + 1;
+                    MonthPoint = position;
+                    monthPage = Integer.MAX_VALUE / 2 - position;
 
-                setTitle(year + "년 " + month + "월");
-            }
-        });
+                    calendar.add(Calendar.MONTH, -monthPage);
+
+                    year = calendar.get(Calendar.YEAR);
+                    month = calendar.get(Calendar.MONTH) + 1;
+
+                    setTitle(year + "년 " + month + "월");
+                }
+            });
+        }
+
+        else if(name.equals("week")) {
+            setContentView(R.layout.activity_week);
+
+            ViewPager2 vpPager2 = findViewById(R.id.vpPager2);
+            FragmentStateAdapter adapter2 = new WeekPagerAdapter(this);
+            vpPager2.setAdapter(adapter2);
+
+            vpPager2.setCurrentItem(Integer.MAX_VALUE / 2, false);
+
+            vpPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    Calendar calendar = Calendar.getInstance();
+
+                    weekPage = Integer.MAX_VALUE / 2 - position;
+
+                    year = calendar.get(Calendar.YEAR);
+                    month = calendar.get(Calendar.MONTH) + 1;
+                    date = calendar.get(Calendar.DATE);
+                    fmonth = month;
+
+                    if (Integer.MAX_VALUE / 2 - MonthPoint == 0)
+                        calendar.add(Calendar.DATE, -(weekPage * 7));
+                    else {
+                        calendar.add(Calendar.MONTH, -(Integer.MAX_VALUE / 2 - MonthPoint));
+                        fmonth = calendar.get(Calendar.MONTH) + 1;
+                        calendar.set(year, month - 1 - (Integer.MAX_VALUE / 2 - MonthPoint), 1 - (weekPage * 7));
+                    }
+
+                    dow = calendar.get(Calendar.DAY_OF_WEEK);
+                    year = calendar.get(Calendar.YEAR);
+                    month = calendar.get(Calendar.MONTH) + 1;
+                    date = calendar.get(Calendar.DAY_OF_MONTH);
+
+                    if (date - dow + 1 <= 0) {
+                        setTitle(year + "년 " + (month - 1) + "월 / " + month + "월");
+                        WeekPoint = fmonth - month;
+                    } else if (date - dow + 7 > calendar.getActualMaximum(Calendar.DATE)) {
+                        setTitle(year + "년 " + month + "월 / " + (month + 1) + "월");
+                        WeekPoint = fmonth - month + 1;
+                    } else {
+                        setTitle(year + "년 " + month + "월");
+                        WeekPoint = fmonth - month;
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -204,6 +263,24 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.floatingWeek:
                 Intent intent_week = new Intent(this, ScheduleActivity.class);
+
+                intent_week.putExtra("type", "week");
+
+                if(myDBHelper == null)
+                    startActivity(intent_week);
+
+                cursor = myDBHelper.getAllUsersBySQL();
+
+                int time_key = 0;
+                while (cursor.moveToNext()) {
+                    if(cursor.getString(2).equals(ClickPoint) && cursor.getString(3).equals(WeekFragment.Clicktime+"")) {
+                        intent_week.putExtra("selected", time_key ++);
+                    }
+                }
+
+                if(time_key == 0)
+                    intent_week.putExtra("time", WeekFragment.Clicktime);
+
                 startActivity(intent_week);
                 break;
         }

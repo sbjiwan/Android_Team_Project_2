@@ -73,9 +73,9 @@ public class HourViewAdapter extends BaseAdapter {
         fmonth = month;
 
         if (Integer.MAX_VALUE / 2 - WeekFragment.monthPoint == 0)
-            calendar.add(Calendar.DATE, -(WeekFragment.page * 7));
+            calendar.add(Calendar.DATE, -((WeekFragment.page - 1) * 7));
         else
-            calendar.set(year, month - 1 - (Integer.MAX_VALUE / 2 - WeekFragment.monthPoint), 1 - (WeekFragment.page * 7));
+            calendar.set(year, month - 1 - (Integer.MAX_VALUE / 2 - WeekFragment.monthPoint), 1 - ((WeekFragment.page - 1) * 7));
 
         dow = calendar.get(Calendar.DAY_OF_WEEK);
         year = calendar.get(Calendar.YEAR);
@@ -100,16 +100,6 @@ public class HourViewAdapter extends BaseAdapter {
             }
         }
 
-        while (cursor.moveToNext()) {
-            String Date = cursor.getString(2);
-            String Time = cursor.getString(3);
-            if(Date.equals(year + "." + month + "." + My_week_grid.get(position%7).date)) {
-                if (Time.equals(position / 7))
-                    tv_date.setText(cursor.getString(1));
-            }
-        }
-
-
         Display display = mActivity.getWindowManager().getDefaultDisplay();
         DisplayMetrics metrics = new DisplayMetrics();
         display.getRealMetrics(metrics);
@@ -117,9 +107,20 @@ public class HourViewAdapter extends BaseAdapter {
         int height = metrics.heightPixels;
 
         if ((my_date_hours.get(position).hour) > -1)
-            tv_date.setText(String.valueOf(my_date_hours.get(position).hour));
+            tv_date.setText(my_date_hours.get(position).hour + "");
         else
             tv_date.setText(" ");
+
+        while (cursor.moveToNext()) {
+            if ((my_date_hours.get(position).hour) > -1)
+                break;
+            String Date = cursor.getString(2);
+            String Time = cursor.getString(3);
+            if(Date.equals(year + "." + month + "." + My_week_grid.get(position%7).date) && Time.equals(position/7+""))
+                tv_date.setText(cursor.getString(1));
+
+            System.out.println(My_week_grid.get(position%7).date);
+        }
 
         if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             tv_date.setHeight(width / 25 * 24 / 7);

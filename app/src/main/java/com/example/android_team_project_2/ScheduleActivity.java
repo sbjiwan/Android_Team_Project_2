@@ -39,6 +39,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     private MyDBHelper mDbHelper;
     Intent intent;
     int key, sHour = 0, eHour = 0;
+    String type = "";
     private LatLng hansung = new LatLng(37.5822608, 127.0094254);
     private MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
     private Marker marker;
@@ -63,7 +64,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editMemo = (EditText) findViewById(R.id.editMemo);
         editTitle.setHint(MainActivity.ClickPoint);
 
-        Intent intent = getIntent();
+        type = intent.getStringExtra("type");
         key = intent.getIntExtra("selected", -1);
         if(key != -1) {
             Cursor cursor = mDbHelper.getAllUsersByMethod();
@@ -77,6 +78,16 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
             timeStart.setMinute(0);
             timeEnd.setHour(Integer.parseInt(cursor.getString(4)));
+            timeEnd.setMinute(0);
+        }
+
+        else {
+            int time = intent.getIntExtra("time", 0);
+            timeStart.setHour(time);
+            sHour = time;
+            timeStart.setMinute(0);
+            timeEnd.setHour(time + 1);
+            eHour = time + 1;
             timeEnd.setMinute(0);
         }
 
@@ -174,13 +185,15 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour+"", eHour+"",Place[0], Place[1], Memo);
         finish();
         Intent intent_save = new Intent(this, MainActivity.class);
+        intent_save.putExtra("type", type);
         startActivity(intent_save);
     }
 
     public void deleteRecord(View view) { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
         mDbHelper.delete(MainActivity.ClickPoint, sHour+"", eHour+"");
         finish();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        Intent intent_delete = new Intent(this, MainActivity.class);
+        intent_delete.putExtra("type", type);
+        startActivity(intent_delete);
     }
 }
