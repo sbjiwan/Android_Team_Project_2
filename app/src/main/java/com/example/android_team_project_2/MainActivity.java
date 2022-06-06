@@ -210,6 +210,8 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @SuppressLint("NonConstantResourceId")
     public void fClick(View view) {
         myDBHelper = new MyDBHelper(this);
         CursorPoint = new int[300];
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.floatingMonth:
                 Intent intent_month = new Intent(this, ScheduleActivity.class);
 
-                if(myDBHelper == null)
+                if (myDBHelper == null)
                     startActivity(intent_month);
 
                 Cursor cursor = myDBHelper.getAllUsersBySQL();
@@ -225,15 +227,15 @@ public class MainActivity extends AppCompatActivity {
                 StringBuffer buffer = new StringBuffer();
                 int cursor_key = 0, date_key = 0;
                 while (cursor.moveToNext()) {
-                    if(cursor.getString(2).equals(ClickPoint)) {
+                    if (cursor.getString(2).equals(ClickPoint)) {
                         buffer.append(cursor.getString(2));
-                        CursorPoint[cursor_key ++] = date_key;
+                        CursorPoint[cursor_key++] = date_key;
                     }
-                    date_key ++;
+                    date_key++;
                 }
-                if(cursor_key > 1) {
+                if (cursor_key > 1) {
                     String[] CursorDate = new String[cursor_key];
-                    for(int i = 0; i < cursor_key; i ++) {
+                    for (int i = 0; i < cursor_key; i++) {
                         cursor.moveToPosition(CursorPoint[i]);
                         CursorDate[i] = cursor.getString(1);
                     }
@@ -242,23 +244,17 @@ public class MainActivity extends AppCompatActivity {
 
                     builder.setTitle(ClickPoint);
 
-                    builder.setItems(CursorDate, new DialogInterface.OnClickListener(){
-                        @Override
-                        public void onClick(DialogInterface dialog, int pos)
-                        {
-                            intent_month.putExtra("selected", CursorPoint[pos]);
+                    builder.setItems(CursorDate, (dialog, pos) -> {
+                        intent_month.putExtra("selected", CursorPoint[pos]);
 
-                            startActivity(intent_month);
-                        }
+                        startActivity(intent_month);
                     });
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
-                }
-                else if(cursor_key == 1) {
+                } else if (cursor_key == 1) {
                     intent_month.putExtra("selected", CursorPoint[0]);
                     startActivity(intent_month);
-                }
-                else
+                } else
                     startActivity(intent_month);
                 break;
             case R.id.floatingWeek:
@@ -282,6 +278,9 @@ public class MainActivity extends AppCompatActivity {
                     intent_week.putExtra("time", WeekFragment.Clicktime);
 
                 startActivity(intent_week);
+
+                //표시 내용 추가
+
                 break;
         }
     }

@@ -92,12 +92,11 @@
                 android:id="@+id/floatingWeek"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="15dp"
                 android:layout_gravity="bottom|right|end"
+                android:layout_margin="15dp"
                 android:clickable="true"
-                app:srcCompat="@android:drawable/ic_input_add"
                 android:onClick="fClick"
-                />
+                app:srcCompat="@android:drawable/ic_input_add" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/vpPager2"

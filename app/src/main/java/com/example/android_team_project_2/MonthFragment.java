@@ -29,6 +29,7 @@ public class MonthFragment extends Fragment {
 
         Bundle bundle = getArguments();
 
+        assert bundle != null;
         page = Integer.MAX_VALUE / 2 - bundle.getInt("position");
 
         GridView gridView = rootView.findViewById(R.id.month_grid);
@@ -87,8 +88,7 @@ public class MonthFragment extends Fragment {
                     Toast.makeText(activity, year + "." + month + "." + (position - dow + 2), Toast.LENGTH_SHORT).show();
                     view.findViewById(R.id.month_textView).setBackgroundColor(Color.CYAN);
                     MainActivity.ClickPoint = year + "." + month + "." + (position - dow + 2);
-                }
-                else {
+                } else {
                     MainActivity.ClickPoint = "";
                     return;
                 }
