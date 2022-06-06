@@ -61,12 +61,6 @@ public class MyDBHelper extends SQLiteOpenHelper {
         return getReadableDatabase().rawQuery(sql, null);
     }
 
-    // 시간정보 없이 데이터베이스를 호출할 때 사용하는 함수
-    public Cursor getDayUsersBySQL(String scheduleYear, String scheduleMonth, String scheduleDay) {
-        String sql = "Select * FROM " + UserContract.Users.TABLE_NAME + " WHERE year= '" + scheduleYear + "' AND Month= '" + scheduleMonth + "' AND Day= '" + scheduleDay + "'";
-        return getReadableDatabase().rawQuery(sql, null);
-    }
-
     public void deleteUserBySQL(String _id) {
         try {
             String sql = String.format(
@@ -99,7 +93,7 @@ public class MyDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
+    public void insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(UserContract.Users.KEY_TITLE, title);
@@ -109,8 +103,6 @@ public class MyDBHelper extends SQLiteOpenHelper {
         values.put(UserContract.Users.KEY_PLACE_X, place_x);
         values.put(UserContract.Users.KEY_PLACE_Y, place_y);
         values.put(UserContract.Users.KEY_MEMO, memo);
-
-        return db.insert(UserContract.Users.TABLE_NAME, null, values);
     }
 
     public Cursor getAllUsersByMethod() {

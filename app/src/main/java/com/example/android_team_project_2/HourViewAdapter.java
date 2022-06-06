@@ -17,10 +17,10 @@ import java.util.Calendar;
 
 public class HourViewAdapter extends BaseAdapter {
 
-    private Context mContext;
-    private int mResource;
-    private ArrayList<My_date_hour> my_date_hours;
-    private Activity mActivity;
+    private final Context mContext;
+    private final int mResource;
+    private final ArrayList<My_date_hour> my_date_hours;
+    private final Activity mActivity;
     MyDBHelper myDBHelper;
     int year, month, date, xdate, dow, fmonth;
 

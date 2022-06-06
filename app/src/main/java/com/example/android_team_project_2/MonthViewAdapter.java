@@ -20,10 +20,10 @@ import java.util.Calendar;
 
 public class MonthViewAdapter extends BaseAdapter {
 
-    private Context mContext;
-    private int mResource;
-    private ArrayList<My_date_month> my_date_months;
-    private Activity mActivity;
+    private final Context mContext;
+    private final int mResource;
+    private final ArrayList<My_date_month> my_date_months;
+    private final Activity mActivity;
     private int check = 0;
     MyDBHelper myDBHelper;
 
