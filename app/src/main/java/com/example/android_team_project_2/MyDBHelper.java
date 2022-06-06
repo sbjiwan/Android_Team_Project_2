@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
 import android.util.Log;
 
 public class MyDBHelper extends SQLiteOpenHelper {
-    final static String TAG="SQLiteDBTest";
+    final static String TAG = "SQLiteDBTest";
 
     public MyDBHelper(Context context) {
         super(context, UserContract.DB_NAME, null, UserContract.DATABASE_VERSION);
@@ -18,20 +18,20 @@ public class MyDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.i(TAG,getClass().getName()+".onCreate()");
+        Log.i(TAG, getClass().getName() + ".onCreate()");
         db.execSQL(UserContract.Users.CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
-        Log.i(TAG,getClass().getName() +".onUpgrade()");
+        Log.i(TAG, getClass().getName() + ".onUpgrade()");
         db.execSQL(UserContract.Users.DELETE_TABLE);
         onCreate(db);
     }
 
     public void insertUserBySQL(String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
         try {
-            String sql = String.format (
+            String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s) VALUES (NULL, '%s', '%s', '%s', '%s', '%s', '%s')",
                     UserContract.Users.TABLE_NAME,
                     UserContract.Users._ID,
@@ -52,31 +52,37 @@ public class MyDBHelper extends SQLiteOpenHelper {
 
             getWritableDatabase().execSQL(sql);
         } catch (SQLException e) {
-            Log.e(TAG,"Error in inserting recodes");
+            Log.e(TAG, "Error in inserting recodes");
         }
     }
 
     public Cursor getAllUsersBySQL() {
         String sql = "Select * FROM " + UserContract.Users.TABLE_NAME;
-        return getReadableDatabase().rawQuery(sql,null);
+        return getReadableDatabase().rawQuery(sql, null);
+    }
+
+    // 시간정보 없이 데이터베이스를 호출할 때 사용하는 함수
+    public Cursor getDayUsersBySQL(String scheduleYear, String scheduleMonth, String scheduleDay) {
+        String sql = "Select * FROM " + UserContract.Users.TABLE_NAME + " WHERE year= '" + scheduleYear + "' AND Month= '" + scheduleMonth + "' AND Day= '" + scheduleDay + "'";
+        return getReadableDatabase().rawQuery(sql, null);
     }
 
     public void deleteUserBySQL(String _id) {
         try {
-            String sql = String.format (
+            String sql = String.format(
                     "DELETE FROM %s WHERE %s = %s",
                     UserContract.Users.TABLE_NAME,
                     UserContract.Users._ID,
                     _id);
             getWritableDatabase().execSQL(sql);
         } catch (SQLException e) {
-            Log.e(TAG,"Error in deleting recodes");
+            Log.e(TAG, "Error in deleting recodes");
         }
     }
 
     public void updateUserBySQL(String _id, String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
         try {
-            String sql = String.format (
+            String sql = String.format(
                     "UPDATE  %s SET %s = '%s', %s = '%s', %s = '%s', %s = '%s', %s = '%s', %s = '%s' WHERE %s = %s",
                     UserContract.Users.TABLE_NAME,
                     UserContract.Users.KEY_TITLE, title,
@@ -86,14 +92,14 @@ public class MyDBHelper extends SQLiteOpenHelper {
                     UserContract.Users.KEY_PLACE_X, place_x,
                     UserContract.Users.KEY_PLACE_Y, place_y,
                     UserContract.Users.KEY_MEMO, memo,
-                    UserContract.Users._ID, _id) ;
+                    UserContract.Users._ID, _id);
             getWritableDatabase().execSQL(sql);
         } catch (SQLException e) {
-            Log.e(TAG,"Error in updating recodes");
+            Log.e(TAG, "Error in updating recodes");
         }
     }
 
-    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y,  String memo) {
+    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String lat, String lng, String memo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(UserContract.Users.KEY_TITLE, title);
@@ -102,36 +108,38 @@ public class MyDBHelper extends SQLiteOpenHelper {
         values.put(UserContract.Users.KEY_END_TIME, e_time);
         values.put(UserContract.Users.KEY_PLACE_X, place_x);
         values.put(UserContract.Users.KEY_PLACE_Y, place_y);
+        values.put(UserContract.Users.LAT, lat);
+        values.put(UserContract.Users.LNG, lng);
         values.put(UserContract.Users.KEY_MEMO, memo);
 
-        return db.insert(UserContract.Users.TABLE_NAME,null,values);
+        return db.insert(UserContract.Users.TABLE_NAME, null, values);
     }
 
     public Cursor getAllUsersByMethod() {
         SQLiteDatabase db = getReadableDatabase();
-        return db.query(UserContract.Users.TABLE_NAME,null,null,null,null,null,null);
+        return db.query(UserContract.Users.TABLE_NAME, null, null, null, null, null, null);
     }
 
     public long deleteUserByMethod(String _id) {
         SQLiteDatabase db = getWritableDatabase();
 
-        String whereClause = UserContract.Users._ID +" = ?";
-        String[] whereArgs ={_id};
+        String whereClause = UserContract.Users._ID + " = ?";
+        String[] whereArgs = {_id};
         return db.delete(UserContract.Users.TABLE_NAME, whereClause, whereArgs);
     }
 
     public void delete(String date, String s_time, String e_time) {
         SQLiteDatabase db = getWritableDatabase();
 
-        System.out.println("DELETE FROM "+ UserContract.Users.TABLE_NAME +
+        System.out.println("DELETE FROM " + UserContract.Users.TABLE_NAME +
                 " WHERE " + UserContract.Users.KEY_DATE + " = '" + date +
                 "' AND " + UserContract.Users.KEY_START_TIME + " = '" + s_time +
-                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time +"';");
+                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time + "';");
 
-        db.execSQL("DELETE FROM "+ UserContract.Users.TABLE_NAME +
+        db.execSQL("DELETE FROM " + UserContract.Users.TABLE_NAME +
                 " WHERE " + UserContract.Users.KEY_DATE + " = '" + date +
                 "' AND " + UserContract.Users.KEY_START_TIME + " = '" + s_time +
-                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time +"';");
+                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time + "';");
     }
 
     public Cursor searchMonth(String searchDate) {
@@ -157,13 +165,19 @@ public class MyDBHelper extends SQLiteOpenHelper {
         values.put(UserContract.Users.KEY_PLACE_Y, place_y);
         values.put(UserContract.Users.KEY_MEMO, memo);
 
-        String whereClause = UserContract.Users._ID +" = ?";
-        String[] whereArgs ={_id};
+        String whereClause = UserContract.Users._ID + " = ?";
+        String[] whereArgs = {_id};
 
         return db.update(UserContract.Users.TABLE_NAME, values, whereClause, whereArgs);
     }
 
 
+    // 시간정보를 포함하여 데이터베이스를 호출할 때 사용하는 함수
+    public Cursor getHourUsersBySQL(String scheduleYear, String scheduleMonth, String scheduleDay, String scheduleHour) {
+        String sql = "Select * FROM " + UserContract.Users.TABLE_NAME + " WHERE year= '"
+                + scheduleYear + "' AND Month= '" + scheduleMonth + "' AND Day= '" + scheduleDay + "' AND StartTime= '" + scheduleHour + "'";
+        return getReadableDatabase().rawQuery(sql, null);
+    }
 }
 
 final class UserContract {
@@ -184,6 +198,8 @@ final class UserContract {
         public static final String KEY_END_TIME="End_time";
         public static final String KEY_PLACE_X="Place_x";
         public static final String KEY_PLACE_Y="Place_y";
+        public static final String LAT = "lat";
+        public static final String LNG = "lng";
         public static final String KEY_MEMO="Memo";
 
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
