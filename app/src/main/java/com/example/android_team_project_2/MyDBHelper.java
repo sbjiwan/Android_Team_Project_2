@@ -108,6 +108,13 @@ public class MyDBHelper extends SQLiteOpenHelper {
         return db.query(UserContract.Users.TABLE_NAME,null,null,null,null,null,null);
     }
 
+    public Cursor getUsersBySQL(String info) {
+        String sql = String.format("Select * FROM %s WHERE %s = '%s'",
+                UserContract.Users.TABLE_NAME,
+                UserContract.Users.KEY_PLACE,info);
+        return getReadableDatabase().rawQuery(sql,null);
+    }
+
     public long deleteUserByMethod(String _id) {
         SQLiteDatabase db = getWritableDatabase();
 

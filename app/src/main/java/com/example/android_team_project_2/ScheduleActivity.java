@@ -11,8 +11,13 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -37,6 +42,12 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     //로그캣 사용 설정
     private static final String TAG = "MainActivity";
 
+    EditText mId;
+    EditText mMemo;
+    EditText mPlace;
+
+    private DBHelper mDbHelper;
+
     int sHour = 0, sMinute = 0, eHour = 0, eMinute = 0;
 
     LatLng hansung = new LatLng(37.5822608, 127.0094254);
@@ -53,6 +64,12 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule);
+
+        mId = (EditText)findViewById(R.id.editTitle);
+        mMemo = (EditText)findViewById(R.id.memo);
+        mPlace = (EditText)findViewById(R.id.editText);
+
+        mDbHelper = new DBHelper(this);
 
         //권한 설정
         checkDangerousPermissions();
@@ -79,6 +96,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
                 if(editText.getText().toString().length() > 0) {
                     Location location = getLocationFromAddress(getApplicationContext(), editText.getText().toString());
 
+                    assert location != null;
                     showCurrentLocation(location);
                 }
             }
@@ -119,12 +137,13 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
     }
 
     private void showCurrentLocation(Location location) {
         LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
-        String msg = "Latitutde : " + curPoint.latitude
+        String msg = "Latitude : " + curPoint.latitude
                 + "\nLongitude : " + curPoint.longitude;
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 
@@ -155,8 +174,8 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         };
 
         int permissionCheck = PackageManager.PERMISSION_GRANTED;
-        for (int i = 0; i < permissions.length; i++) {
-            permissionCheck = ContextCompat.checkSelfPermission(this, permissions[i]);
+        for (String permission : permissions) {
+            permissionCheck = ContextCompat.checkSelfPermission(this, permission);
             if (permissionCheck == PackageManager.PERMISSION_DENIED) {
                 break;
             }
@@ -198,7 +217,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     public void mClick(View view) {
         switch (view.getId()) {
             case R.id.search:
-
+                insertRecord();
+                viewAllToTextView();
+                viewAllToListView();
                 break;
             case R.id.save:
 
@@ -211,6 +232,72 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
                 finish();
                 break;
         }
+    }
+
+
+    private void viewAllToListView() {
+
+        Cursor cursor = mDbHelper.getAllUsersByMethod();
+
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(getApplicationContext(),
+                R.layout.item, cursor, new String[]{
+                UserContract.Users._ID,
+                UserContract.Users.KEY_NAME,
+                UserContract.Users.KEY_PHONE},
+                new int[]{R.id._id, R.id.name, R.id.phone}, 0);
+
+        ListView lv = (ListView)findViewById(R.id.listview);
+        lv.setAdapter(adapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Adapter adapter = adapterView.getAdapter();
+
+                mId.setText(((Cursor)adapter.getItem(i)).getString(0));
+                mMemo.setText(((Cursor)adapter.getItem(i)).getString(1));
+                mPhone.setText(((Cursor)adapter.getItem(i)).getString(2));
+            }
+        });
+        lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+    }
+
+    private void updateRecord() {
+        TextView _id = (TextView)findViewById(R.id._id);
+        TextView name = (TextView)findViewById(R.id.edit_name);
+        TextView phone = (TextView)findViewById(R.id.edit_phone);
+
+        mDbHelper.updateUserBySQL(_id.getText().toString(),name.getText().toString(),phone.getText().toString());
+        long nOfRows = mDbHelper.updateUserByMethod(_id.getText().toString(),
+                name.getText().toString(),
+                phone.getText().toString());
+        if (nOfRows >0)
+            Toast.makeText(this,"Record Updated", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(this,"No Record Updated", Toast.LENGTH_SHORT).show();
+    }
+
+    private void deleteRecord() {
+        TextView _id = (TextView)findViewById(R.id._id);
+
+        mDbHelper.deleteUserBySQL(_id.getText().toString());
+        long nOfRows = mDbHelper.deleteUserByMethod(_id.getText().toString());
+        if (nOfRows >0)
+            Toast.makeText(this,"Record Deleted", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(this,"No Record Deleted", Toast.LENGTH_SHORT).show();
+    }
+
+    private void insertRecord() {
+        TextView title = (TextView)findViewById(R.id.editTitle);
+        TextView memo = (TextView)findViewById(R.id.memo);
+
+        mDbHelper.insertUserBySQL(title.getText().toString(),memo.getText().toString());
+        long nOfRows = mDbHelper.insertUserByMethod(title.getText().toString(),memo.getText().toString());
+        if (nOfRows >0)
+            Toast.makeText(this,nOfRows+" Record Inserted", Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(this,"No Record Inserted", Toast.LENGTH_SHORT).show();
     }
 
     public void onMapReady(GoogleMap googleMap) {

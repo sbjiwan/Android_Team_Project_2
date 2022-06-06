@@ -120,13 +120,14 @@
             android:text="@string/schedule_memo"
             android:textSize="30dp"
             />
+
         <EditText
+            android:id="@+id/memo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp"
-            android:hint="@string/schedule_hint"
-            />
+            android:hint="@string/schedule_hint" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
