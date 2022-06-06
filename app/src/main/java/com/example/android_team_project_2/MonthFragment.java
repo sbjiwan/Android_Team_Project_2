@@ -1,7 +1,6 @@
 package com.example.android_team_project_2;
 
 import android.app.Activity;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,23 +14,22 @@ import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Objects;
 
 public class MonthFragment extends Fragment {
-    int page = 0;
+    static int page = 0;
     int year, month, dow, lastdate, xdate;
     MonthViewAdapter adapter;
     ArrayList<My_date_month> My_cal;
     View selectedView = null;
 
-    MonthFragment(int position) {
-        page = Integer.MAX_VALUE / 2 - position;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_month, container, false);
+
+        Bundle bundle = getArguments();
+
+        page = Integer.MAX_VALUE / 2 - bundle.getInt("position");
 
         GridView gridView = rootView.findViewById(R.id.month_grid);
 
@@ -88,9 +86,12 @@ public class MonthFragment extends Fragment {
                 if (position >= dow - 1 && position < lastdate + dow - 1) {
                     Toast.makeText(activity, year + "." + month + "." + (position - dow + 2), Toast.LENGTH_SHORT).show();
                     view.findViewById(R.id.month_textView).setBackgroundColor(Color.CYAN);
-                } else
+                    MainActivity.ClickPoint = year + "." + month + "." + (position - dow + 2);
+                }
+                else {
+                    MainActivity.ClickPoint = "";
                     return;
-
+                }
                 selectedView = view;
             }
         });

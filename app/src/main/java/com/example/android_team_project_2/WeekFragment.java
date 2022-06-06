@@ -1,35 +1,27 @@
 package com.example.android_team_project_2;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 public class WeekFragment extends Fragment {
-    int page = 0;
+    static int page = 0;
     int year, month, dow, date, xdate, fmonth;
     int test = -1;
     int xPosition;
-    int monthPoint;
+    static int monthPoint;
     WeekViewAdapter weekViewAdapter;
     HourViewAdapter hourGridViewAdapter;
     HourViewAdapter hourListViewAdapter;
@@ -38,14 +30,14 @@ public class WeekFragment extends Fragment {
     ArrayList<My_date_hour> My_hour_list;
     View selectedHourView;
 
-    WeekFragment(int position) {
-        page = Integer.MAX_VALUE / 2 - position;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_week, container, false);
+
+        Bundle bundle = getArguments();
+
+        page = Integer.MAX_VALUE / 2 - bundle.getInt("position");
 
         GridView week_grid = rootView.findViewById(R.id.week_grid);
 
@@ -178,15 +170,15 @@ public class WeekFragment extends Fragment {
 
                 view.findViewById(R.id.hour_textView).setBackgroundColor(Color.CYAN);
 
-                if(My_week_grid.get(i%7).date > 100)
-                    Toast.makeText(activity, (My_week_grid.get(i%7).date-100) + "일 " + i/7 + "시", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(activity, My_week_grid.get(i%7).date + "일 " + i/7 + "시", Toast.LENGTH_SHORT).show();
+                if(My_week_grid.get(i%7).date > 100) {
+                    Toast.makeText(activity, (My_week_grid.get(i % 7).date - 100) + "일 " + i / 7 + "시", Toast.LENGTH_SHORT).show();
+                    MainActivity.ClickPoint = year +"." + month +"." + (My_week_grid.get(i % 7).date - 100);
+                }
+                else {
+                    Toast.makeText(activity, My_week_grid.get(i % 7).date + "일 " + i / 7 + "시", Toast.LENGTH_SHORT).show();
+                    MainActivity.ClickPoint = year +"." + month +"." + (My_week_grid.get(i % 7).date);
+                }
 
-                if (date > 100)
-                    Toast.makeText(activity, (date - 100) + "일 " + i / 7 + "시", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(activity, date + "일 " + i / 7 + "시", Toast.LENGTH_SHORT).show();
 
                 if (test > 0) {
                     My_week_grid.remove(xPosition % 7);

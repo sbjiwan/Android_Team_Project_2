@@ -1,124 +1,75 @@
 package com.example.android_team_project_2;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
+import android.widget.SeekBar;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.List;
-
 public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    //로그캣 사용 설정
-    private static final String TAG = "MainActivity";
-
-    EditText mId;
-    EditText mMemo;
-    EditText mPlace;
-
+    private int sHour = 0, sMinute = 0, eHour = 0, eMinute = 0;
     private MyDBHelper myDBHelper;
-
-    int sHour = 0, sMinute = 0, eHour = 0, eMinute = 0;
-
-    LatLng hansung = new LatLng(37.5822608, 127.0094254);
-
-    //객체 선언
-    SupportMapFragment mapFragment;
-    GoogleMap map;
-    Button btnSearch;
-    EditText editText;
-
-    MarkerOptions myMarker;
+    private int search_check = 0;
+    private GoogleMap map;
+    private CompoundButton animateToggle;
+    private CompoundButton customDurationToggle;
+    private SeekBar customDurationBar;
+    private LatLng latLng;
+    private LatLng hansung = new LatLng(37.5822608, 127.0094254);
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule);
-
-        mId = (EditText) findViewById(R.id.editTitle);
-        mMemo = (EditText) findViewById(R.id.memo);
-        mPlace = (EditText) findViewById(R.id.editText);
-
         myDBHelper = new MyDBHelper(this);
-
-        //권한 설정
-        checkDangerousPermissions();
-
-        //객체 초기화
-        editText = findViewById(R.id.editText);
-        btnSearch = findViewById(R.id.search);
-
-        //지도 프래그먼트 설정
-        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @SuppressLint("MissingPermission")
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                Log.d(TAG, "onMapReady: ");
-                map = googleMap;
-                map.setMyLocationEnabled(true);
-            }
-        });
-        MapsInitializer.initialize(this);
-
-        btnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (editText.getText().toString().length() > 0) {
-                    Location location = getLocationFromAddress(getApplicationContext(), editText.getText().toString());
-
-                    assert location != null;
-                    showCurrentLocation(location);
-                }
-            }
-        });
 
         TimePicker timeStart = findViewById(R.id.timeStart);
         TimePicker timeEnd = findViewById(R.id.timeEnd);
 
         EditText editTitle = findViewById(R.id.editTitle);
-        editTitle.setHint(" ");
+        EditText editPlace = (EditText) findViewById(R.id.editPlace);
+        EditText editMemo = (EditText) findViewById(R.id.editMemo);
+        editTitle.setHint(MainActivity.ClickPoint);
+
+        Intent intent = getIntent();
+        if(intent.getIntExtra("selected", -1) != -1) {
+            Cursor cursor = myDBHelper.getAllUsersByMethod();
+
+            cursor.moveToPosition(intent.getIntExtra("selected", -1));
+
+            editTitle.setText(cursor.getString(1));
+            editPlace.setText(cursor.getString(5));
+            editMemo.setText(cursor.getString(6));
+
+            timeStart.setCurrentHour(Integer.parseInt(cursor.getString(3)));
+            timeEnd.setCurrentHour(Integer.parseInt(cursor.getString(4)));
+        }
 
         timeStart.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
             @Override
             public void onTimeChanged(TimePicker timePicker, int h, int m) {
                 sHour = h;
                 sMinute = m;
-                if (sHour <= 22)
+                if(sHour <= 22)
                     timeEnd.setCurrentHour(h + 1);
-                else if (sHour == 23)
+                else if(sHour == 23)
                     timeEnd.setCurrentHour(0);
                 timeEnd.setCurrentMinute(m);
             }
@@ -130,9 +81,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
                 eHour = h;
                 eMinute = m;
 
-                if (eHour >= 1)
+                if(eHour >= 1)
                     timeStart.setCurrentHour(h - 1);
-                else if (eHour == 0)
+                else if(eHour == 0)
                     timeStart.setCurrentHour(23);
                 timeEnd.setCurrentMinute(m);
             }
@@ -140,115 +91,90 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        assert mapFragment != null;
         mapFragment.getMapAsync(this);
     }
 
-    private void showCurrentLocation(Location location) {
-        LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
-        String msg = "Latitude : " + curPoint.latitude
-                + "\nLongitude : " + curPoint.longitude;
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-
-        //화면 확대, 숫자가 클수록 확대
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(curPoint, 15));
-
-        //마커 찍기
-        Location targetLocation = new Location("");
-        targetLocation.setLatitude(37.4937);
-        targetLocation.setLongitude(127.0643);
-        showMyMarker(targetLocation);
-    }
-
-    private void showMyMarker(Location location) {
-        if (myMarker == null) {
-            myMarker = new MarkerOptions();
-            myMarker.position(new LatLng(location.getLatitude(), location.getLongitude()));
-            myMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.mylocation));
-            map.addMarker(myMarker);
-        }
-    }
-
-    private void checkDangerousPermissions() {
-        String[] permissions = {
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_WIFI_STATE
-        };
-
-        int permissionCheck = PackageManager.PERMISSION_GRANTED;
-        for (String permission : permissions) {
-            permissionCheck = ContextCompat.checkSelfPermission(this, permission);
-            if (permissionCheck == PackageManager.PERMISSION_DENIED) {
-                break;
-            }
-        }
-
-        if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "권한 있음", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "권한 없음", Toast.LENGTH_LONG).show();
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-                Toast.makeText(this, "권한 설명 필요함.", Toast.LENGTH_LONG).show();
-            } else {
-                ActivityCompat.requestPermissions(this, permissions, 1);
-            }
-        }
-    }
-
-    private Location getLocationFromAddress(Context context, String address) {
-        Geocoder geocoder = new Geocoder(context);
-        List<Address> addresses;
-        Location resLocation = new Location("");
-        try {
-            addresses = geocoder.getFromLocationName(address, 5);
-            if ((addresses == null) || (addresses.size() == 0)) {
-                return null;
-            }
-            Address addressLoc = addresses.get(0);
-
-            resLocation.setLatitude(addressLoc.getLatitude());
-            resLocation.setLongitude(addressLoc.getLongitude());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return resLocation;
-    }
-
     public void mClick(View view) {
+        myDBHelper = new MyDBHelper(this);
+        EditText editTitle = (EditText) findViewById(R.id.editTitle);
+        EditText editPlace = (EditText) findViewById(R.id.editPlace);
+        EditText editMemo = (EditText) findViewById(R.id.editMemo);
+        String Title = editTitle.getText().toString();
+        String Memo = editMemo.getText().toString();
+        String[] Place = editPlace.getText().toString().split("/");
+
         switch (view.getId()) {
-            //지도 찾기
             case R.id.search:
-
-
+                if(Double.parseDouble(Place[0]) == 0.0 && Double.parseDouble(Place[1]) == 0.0)
+                    break;
+                latLng = new LatLng(Double.parseDouble(Place[0]), Double.parseDouble(Place[1]));
                 break;
             case R.id.save:
-                myDBHelper.getAllUsersBySQL();
-                myDBHelper.getAllUsersByMethod();
-                myDBHelper.insertUserBySQL();
-                myDBHelper.insertUserByMethod();
-                myDBHelper.updateUserBySQL();
-                myDBHelper.updateUserByMethod();
+                myDBHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour+"", eHour+"",Place[0], Place[1], Memo);
                 finish();
                 break;
             case R.id.cancel:
                 finish();
                 break;
             case R.id.delete:
-                myDBHelper.getAllUsersBySQL();
-                myDBHelper.getAllUsersByMethod();
-                myDBHelper.deleteUserBySQL();
-                myDBHelper.updateUserBySQL();
-                myDBHelper.updateUserByMethod();
+                //myDBHelper.delete(MainActivity.ClickPoint, sHour+"", eHour+"");
                 finish();
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
                 break;
         }
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
+    private boolean checkReady() {
+        if (map == null) {
+            Toast.makeText(this, "map not ready", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
 
+    public void onGoToSearch(View view) {
+        if (!checkReady()) {
+            return;
+        }
+        myDBHelper = new MyDBHelper(this);
+
+        EditText editPlace = (EditText) findViewById(R.id.editPlace);
+        String[] Place = editPlace.getText().toString().split("/");
+
+        if(Double.parseDouble(Place[0]) == 0.0 && Double.parseDouble(Place[1]) == 0.0)
+            return;
+
+        CameraPosition search =
+                new CameraPosition.Builder().target(new LatLng(Double.parseDouble(Place[0]), Double.parseDouble(Place[1])))
+                        .zoom(15.5f)
+                        .bearing(300)
+                        .tilt(50)
+                        .build();
+
+        changeCamera(CameraUpdateFactory.newCameraPosition(search));
+    }
+
+    private void changeCamera(CameraUpdate update) {
+        changeCamera(update, null);
+    }
+
+    private void changeCamera(CameraUpdate update, GoogleMap.CancelableCallback callback) {
+        if (animateToggle.isChecked()) {
+            if (customDurationToggle.isChecked()) {
+                int duration = customDurationBar.getProgress();
+                map.animateCamera(update, Math.max(duration, 1), callback);
+            } else {
+                map.animateCamera(update, callback);
+            }
+        } else {
+            map.moveCamera(update);
+        }
+    }
+
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+        map.addMarker(new MarkerOptions().position(hansung));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
     }
 }

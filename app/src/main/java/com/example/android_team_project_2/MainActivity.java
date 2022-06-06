@@ -1,18 +1,19 @@
 package com.example.android_team_project_2;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
-
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import java.util.Calendar;
 
@@ -21,6 +22,9 @@ public class MainActivity extends AppCompatActivity {
     int year, month, date, dow;
     int WeekPoint = 0, fmonth = 0;
     int monthPage = 0, weekPage = 0;
+    static String ClickPoint = "";
+    static int[] CursorPoint;
+    MyDBHelper myDBHelper;
 
     public int getMonthPoint() {
         return MonthPoint;
@@ -148,10 +152,56 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void fClick(View view) {
+        myDBHelper = new MyDBHelper(this);
+        CursorPoint = new int[300];
         switch (view.getId()) {
-            case R.id.floating:
-                Intent intent = new Intent(this, ScheduleActivity.class);
-                startActivity(intent);
+            case R.id.floatingMonth:
+                Intent intent_month = new Intent(this, ScheduleActivity.class);
+
+                if(myDBHelper == null)
+                    startActivity(intent_month);
+
+                Cursor cursor = myDBHelper.getAllUsersBySQL();
+
+                StringBuffer buffer = new StringBuffer();
+                int cursor_key = 0, date_key = 0;
+                while (cursor.moveToNext()) {
+                    if(cursor.getString(2).equals(ClickPoint)) {
+                        buffer.append(cursor.getString(2));
+                        CursorPoint[cursor_key ++] = date_key;
+
+                    }
+                    date_key ++;
+                }
+                if(cursor_key > 1) {
+                    String[] CursorDate = new String[cursor_key];
+                    for(int i = 0; i < cursor_key; i ++) {
+                        cursor.moveToPosition(CursorPoint[i]);
+                        CursorDate[i] = cursor.getString(1);
+                    }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                    builder.setTitle(ClickPoint);
+
+                    builder.setItems(CursorDate, new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialog, int pos)
+                        {
+                            intent_month.putExtra("selected", CursorPoint[pos]);
+
+                            startActivity(intent_month);
+                        }
+                    });
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                }
+                else
+                    startActivity(intent_month);
+                break;
+            case R.id.floatingWeek:
+                Intent intent_week = new Intent(this, ScheduleActivity.class);
+                startActivity(intent_week);
                 break;
         }
     }

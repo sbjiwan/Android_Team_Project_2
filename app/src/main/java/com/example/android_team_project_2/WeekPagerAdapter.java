@@ -1,5 +1,7 @@
 package com.example.android_team_project_2;
 
+import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -17,7 +19,11 @@ class WeekPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        return new WeekFragment(position);
+        WeekFragment weekFragment = new WeekFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt("position", position);
+        weekFragment.setArguments(bundle);
+        return weekFragment;
     }
 
     // 전체 페이지 개수 반환
@@ -26,4 +32,3 @@ class WeekPagerAdapter extends FragmentStateAdapter {
         return NUM_ITEMS;
     }
 }
-

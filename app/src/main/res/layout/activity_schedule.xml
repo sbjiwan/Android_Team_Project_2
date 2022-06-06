@@ -83,7 +83,7 @@
         >
 
         <EditText
-            android:id="@+id/editText"
+            android:id="@+id/editPlace"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -98,7 +98,7 @@
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp"
             android:text="@string/search"
-            android:onClick="mClick"
+            android:onClick="onGoToSearch"
             />
     </LinearLayout>
 
@@ -120,14 +120,14 @@
             android:text="@string/schedule_memo"
             android:textSize="30dp"
             />
-
         <EditText
-            android:id="@+id/memo"
+            android:id="@+id/editMemo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp"
-            android:hint="@string/schedule_hint" />
+            android:hint="@string/schedule_hint"
+            />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
