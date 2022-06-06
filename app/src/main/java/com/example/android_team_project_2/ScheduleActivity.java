@@ -25,78 +25,85 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 
 public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCallback {
-    private FusedLocationProviderClient mFusedLocationClient;
     private GoogleMap mGoogleMap = null;
     private MyDBHelper mDbHelper;
-    String scheduleDate;
-    LatLng location;
-    int year;
-    int month;
-    int day;
-    int hour;
-    double lat;
-    double lng;
+    Intent intent;
+    int key, sHour = 0, eHour = 0;
+    private LatLng hansung = new LatLng(37.5822608, 127.0094254);
+    private MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
+    private Marker marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map); // 구글맵 프래그먼트 생성
         mapFragment.getMapAsync(ScheduleActivity.this);
-        Intent intent = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
-        EditText title = findViewById(R.id.editTitle);
-        year = intent.getIntExtra("year", 0);
-        month = intent.getIntExtra("month", 0);
-        day = intent.getIntExtra("day", 0);
-        hour = intent.getIntExtra("hour", 0);
-        System.out.println(year);
-        System.out.println(month);
-        System.out.println(day);
-        scheduleDate = String.valueOf(year) + String.valueOf(month) + String.valueOf(day);
-        title.setText(year + "년 " + month + "월 " + day + "일 " + hour + "시");
+
+        intent = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
         mDbHelper = new MyDBHelper(this); // 데이터베이스 생성
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setting();
+
+        TimePicker timeStart = findViewById(R.id.timeStart);
+        TimePicker timeEnd = findViewById(R.id.timeEnd);
+
+        EditText editTitle = findViewById(R.id.editTitle);
+        EditText editPlace = (EditText) findViewById(R.id.editPlace);
+        EditText editMemo = (EditText) findViewById(R.id.editMemo);
+        editTitle.setHint(MainActivity.ClickPoint);
+
+        Intent intent = getIntent();
+        key = intent.getIntExtra("selected", -1);
+        if(key != -1) {
+            Cursor cursor = mDbHelper.getAllUsersByMethod();
+
+            cursor.moveToPosition(key);
+
+            editTitle.setText(cursor.getString(1));
+            editPlace.setText(cursor.getString(5) + "/" + cursor.getString(6));
+            editMemo.setText(cursor.getString(7));
+
+            timeStart.setHour(Integer.parseInt(cursor.getString(3)));
+            timeStart.setMinute(0);
+            timeEnd.setHour(Integer.parseInt(cursor.getString(4)));
+            timeEnd.setMinute(0);
         }
-        Button getAddressButton = (Button) findViewById(R.id.search);
-        getAddressButton.setOnClickListener(new View.OnClickListener() {
+
+        timeStart.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
             @Override
-            public void onClick(View view) {
-                getAddress();
+            public void onTimeChanged(TimePicker timePicker, int h, int m) {
+                sHour = h;
+                if(sHour <= 22)
+                    timeEnd.setHour(h + 1);
+                else if(sHour == 23)
+                    timeEnd.setHour(0);
+                timeEnd.setMinute(m);
             }
-        }); // 검색 버튼 클릭 시 주소를 찾아 지도에 표시하는 getAddress()함수 호출
-        Button save = (Button) findViewById(R.id.save);
-        save.setOnClickListener(new View.OnClickListener() {
+        });
+
+        timeEnd.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
             @Override
-            public void onClick(View view) {
-                insertRecord();
+            public void onTimeChanged(TimePicker timePicker, int h, int m) {
+                eHour = h;
+                if(eHour >= 1)
+                    timeStart.setHour(h - 1);
+                else if(eHour == 0)
+                    timeStart.setHour(23);
+                timeEnd.setMinute(m);
             }
-        }); // 저장 버튼 클릭 시 현재 액티비티에 적힌 데이터를 SQL에 저장
-        Button remove = (Button) findViewById(R.id.delete);
-        remove.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteRecord();
-            }
-        }); // 삭제 버튼 클릭 시 현재 SQL에 저장된 데이터를 삭제
+        });
+
         Button cancel = (Button) findViewById(R.id.cancel);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,91 +116,71 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     @SuppressLint("Range")
     @Override
     public void onMapReady(GoogleMap googleMap) { // 이전 프래그먼트에서 받아온 데이터에 해당하는 데이터베이스에 저장된 주소로 구글맵을 이동
-        Cursor cursor = mDbHelper.getDayUsersBySQL(String.valueOf(year), String.valueOf(month), String.valueOf(day));
         mGoogleMap = googleMap;
-        location = new LatLng(37.5817891, 127.008175); // 데이터가 없을 시 기본 주소는 한성대학교로 표시함
-        while (cursor.moveToNext()) {
-            lat = Double.parseDouble(cursor.getString(cursor.getColumnIndex(UserContract.Users.LAT)));
-            lng = Double.parseDouble(cursor.getString(cursor.getColumnIndex(UserContract.Users.LNG)));
-            location = new LatLng(lat, lng);
+        Cursor cursor = mDbHelper.getAllUsersByMethod();
+        if(key == -1) {
+            defaultMapReady();
+            return;
         }
-        googleMap.addMarker(new MarkerOptions().position(location));
-        // move the camera
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
-    }
+        cursor.moveToPosition(key);
 
-    private void getAddress() { // 주소를 검색하는 함수
-        EditText editText = (EditText) findViewById(R.id.editPlace);
-        String address = editText.getText().toString();
-
-        try {
-            Geocoder geocoder = new Geocoder(this, Locale.KOREA);
-            List<Address> addresses = geocoder.getFromLocationName(address, 1);
-            if (addresses.size() > 0) {
-                Address bestResult = (Address) addresses.get(0);
-                location = new LatLng(bestResult.getLatitude(), bestResult.getLongitude());
-                mGoogleMap.addMarker(new MarkerOptions().position(location).title(address));
-                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
-            }
-        } catch (IOException e) {
-            Log.e(getClass().toString(), "Failed in using Geocoder.", e);
+        if(Double.parseDouble(cursor.getString(6)) == 0.0 && Double.parseDouble(cursor.getString(6)) == 0.0) {
+            defaultMapReady();
             return;
         }
 
+        LatLng location = new LatLng(Double.parseDouble(cursor.getString(5)), Double.parseDouble(cursor.getString(6)));
+
+        if(marker != null)
+            marker.remove();
+
+        mGoogleMap.addMarker(new MarkerOptions().position(location));
+        // move the camera
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
     }
 
-    private void insertRecord() { // 저장 버튼을 누르면 해당 액티비티에 적힌 데이터를 SQL에 저장
-        EditText title = findViewById(R.id.editTitle);
-        TimePicker startPicker = findViewById(R.id.timeStart);
-        TimePicker endPicker = findViewById(R.id.timeEnd);
-        EditText input = findViewById(R.id.editPlace);
-        EditText memo = findViewById(R.id.editMemo);
+    public void defaultMapReady() {
+        if(marker != null)
+            marker.remove();
 
-        long nOfRows = mDbHelper.insertUserByMethod(String.valueOf(year), String.valueOf(month), String.valueOf(day), title.getText().toString(),
-                startPicker.getCurrentHour().toString(), endPicker.getCurrentHour().toString(),
-                String.valueOf(location.latitude), String.valueOf(location.longitude), memo.getText().toString());
-        if (nOfRows > 0)
-            Toast.makeText(this, nOfRows + " Record Inserted", Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(this, "No Record Inserted", Toast.LENGTH_SHORT).show();
+        marker = mGoogleMap.addMarker(marker_hansung);
+        // move the camera
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hansung, 15));
+    }
 
+    public void getAddress(View view) { // 주소를 검색하는 함수
+        EditText editText = (EditText) findViewById(R.id.editPlace);
+        String[] Locate = editText.getText().toString().split("/");
+
+        if(marker != null)
+            marker.remove();
+
+        LatLng location = new LatLng(Double.parseDouble(Locate[0]), Double.parseDouble(Locate[1]));
+
+        marker = mGoogleMap.addMarker(new MarkerOptions().position(location));
+        // move the camera
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+    }
+
+    public void insertRecord(View view) { // 저장 버튼을 누르면 해당 액티비티에 적힌 데이터를 SQL에 저장
+        mDbHelper = new MyDBHelper(this);
+        EditText editTitle = (EditText) findViewById(R.id.editTitle);
+        EditText editPlace = (EditText) findViewById(R.id.editPlace);
+        EditText editMemo = (EditText) findViewById(R.id.editMemo);
+        String Title = editTitle.getText().toString();
+        String Memo = editMemo.getText().toString();
+        String[] Place = editPlace.getText().toString().split("/");
+
+        mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour+"", eHour+"",Place[0], Place[1], Memo);
         finish();
-
+        Intent intent_save = new Intent(this, MainActivity.class);
+        startActivity(intent_save);
     }
 
-    private void deleteRecord() { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
-        Cursor cursor = mDbHelper.getDayUsersBySQL(String.valueOf(year), String.valueOf(month), String.valueOf(day));
-        if (hour > 0) {
-            cursor = mDbHelper.getHourUsersBySQL(String.valueOf(year), String.valueOf(month), String.valueOf(day), String.valueOf(hour));
-        }
-        cursor.moveToNext();
-        @SuppressLint("Range") long nOfRows = mDbHelper.deleteUserByMethod(cursor.getString(cursor.getColumnIndex(UserContract.Users._ID)));
-        if (nOfRows > 0)
-            Toast.makeText(this, "Record Deleted", Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(this, "No Record Deleted", Toast.LENGTH_SHORT).show();
+    public void deleteRecord(View view) { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
+        mDbHelper.delete(MainActivity.ClickPoint, sHour+"", eHour+"");
         finish();
-    }
-
-    @SuppressLint("Range")
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void setting() { // 액티비티가 호출되었을 때 이전 프래그먼트에서 전달받은 데이터를 토대로 데이터를 화면에 표시함
-        EditText title = findViewById(R.id.editTitle);
-        TimePicker startPicker = findViewById(R.id.timeStart);
-        TimePicker endPicker = findViewById(R.id.timeEnd);
-        EditText memo = findViewById(R.id.editMemo);
-        Cursor cursor = mDbHelper.getDayUsersBySQL(String.valueOf(year), String.valueOf(month),
-                String.valueOf(day)); // 처음에 커서의 포인터를 해당 년도, 월, 일에 해당하는 부분으로 지정함
-        if (hour > 0)
-            cursor = mDbHelper.getHourUsersBySQL(String.valueOf(year), String.valueOf(month),
-                    String.valueOf(day), String.valueOf(hour)); // 만약 시간에 대한 정보가 있을 경우 시간까지 포함하여 포인터를 이동시킴
-        startPicker.setHour(hour); // 데이터를 기반으로 시작시간을 표시
-        endPicker.setHour(hour + 1); // 시작시간에서 한시간 후를 끝나는 시간으로 기본 설정함
-        //while (cursor.moveToNext()){
-        if (cursor.moveToNext()) { // 해당 날짜 데이터에 해당하는 스케줄의 제목과 메모를 가져와 작성
-            title.setText(cursor.getString(cursor.getColumnIndex(UserContract.Users.KEY_TITLE)));
-            memo.setText(cursor.getString(cursor.getColumnIndex(UserContract.Users.KEY_MEMO)));
-        }
-        //}
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 }

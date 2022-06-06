@@ -99,7 +99,7 @@ public class MyDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String lat, String lng, String memo) {
+    public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(UserContract.Users.KEY_TITLE, title);
@@ -108,8 +108,6 @@ public class MyDBHelper extends SQLiteOpenHelper {
         values.put(UserContract.Users.KEY_END_TIME, e_time);
         values.put(UserContract.Users.KEY_PLACE_X, place_x);
         values.put(UserContract.Users.KEY_PLACE_Y, place_y);
-        values.put(UserContract.Users.LAT, lat);
-        values.put(UserContract.Users.LNG, lng);
         values.put(UserContract.Users.KEY_MEMO, memo);
 
         return db.insert(UserContract.Users.TABLE_NAME, null, values);
@@ -130,11 +128,6 @@ public class MyDBHelper extends SQLiteOpenHelper {
 
     public void delete(String date, String s_time, String e_time) {
         SQLiteDatabase db = getWritableDatabase();
-
-        System.out.println("DELETE FROM " + UserContract.Users.TABLE_NAME +
-                " WHERE " + UserContract.Users.KEY_DATE + " = '" + date +
-                "' AND " + UserContract.Users.KEY_START_TIME + " = '" + s_time +
-                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time + "';");
 
         db.execSQL("DELETE FROM " + UserContract.Users.TABLE_NAME +
                 " WHERE " + UserContract.Users.KEY_DATE + " = '" + date +
@@ -198,8 +191,6 @@ final class UserContract {
         public static final String KEY_END_TIME="End_time";
         public static final String KEY_PLACE_X="Place_x";
         public static final String KEY_PLACE_Y="Place_y";
-        public static final String LAT = "lat";
-        public static final String LNG = "lng";
         public static final String KEY_MEMO="Memo";
 
         public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
