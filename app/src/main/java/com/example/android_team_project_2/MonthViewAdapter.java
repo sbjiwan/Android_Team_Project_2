@@ -55,6 +55,7 @@ public class MonthViewAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(mResource, parent, false);
         }
+
         TextView tv_date = convertView.findViewById(R.id.month_textView);
         TextView tv_sc1 = convertView.findViewById(R.id.schedule_textView1);
         TextView tv_sc2 = convertView.findViewById(R.id.schedule_textView2);
@@ -64,7 +65,6 @@ public class MonthViewAdapter extends BaseAdapter {
             check = 1;
         else if (check == 1 && my_date_months.get(position).date == 1)
             check = 0;
-
         if (position == 0 && my_date_months.get(position).date == 1)
             check = 1;
 
@@ -74,6 +74,9 @@ public class MonthViewAdapter extends BaseAdapter {
         int month = calendar.get(Calendar.MONTH) + 1;
 
         calendar.set(year, month - 1 - MonthFragment.page, 1);
+
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH) + 1;
 
         myDBHelper = new MyDBHelper(convertView.getContext());
         Cursor cursor;

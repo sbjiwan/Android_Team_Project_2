@@ -107,7 +107,7 @@ public class HourViewAdapter extends BaseAdapter {
         int height = metrics.heightPixels;
 
         if ((my_date_hours.get(position).hour) > -1)
-            tv_date.setText(my_date_hours.get(position).hour + "");
+            tv_date.setText(my_date_hours.get(position).hour);
         else
             tv_date.setText(" ");
 

@@ -55,6 +55,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editMemo = (EditText) findViewById(R.id.editMemo);
         editTitle.setHint(MainActivity.ClickPoint);
 
+        String[] date = String.valueOf(MainActivity.ClickPoint).split("[.]");
+        setTitle(date[0] + "년 " + date[1] + "월 " + date[2] + "일");
+
         intent_save = new Intent(this, MainActivity.class);
 
         type = intent_load.getStringExtra("type");
