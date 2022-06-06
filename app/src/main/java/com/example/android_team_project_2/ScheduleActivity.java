@@ -55,11 +55,29 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             cursor.moveToPosition(intent.getIntExtra("selected", -1));
 
             editTitle.setText(cursor.getString(1));
-            editPlace.setText(cursor.getString(5));
-            editMemo.setText(cursor.getString(6));
+            editPlace.setText(cursor.getString(5) + "/" + cursor.getString(6));
+            editMemo.setText(cursor.getString(7));
 
             timeStart.setCurrentHour(Integer.parseInt(cursor.getString(3)));
+            timeStart.setCurrentMinute(0);
+            sHour = Integer.parseInt(cursor.getString(3));
             timeEnd.setCurrentHour(Integer.parseInt(cursor.getString(4)));
+            timeEnd.setCurrentMinute(0);
+            eHour = Integer.parseInt(cursor.getString(4));
+
+            String[] Place = editPlace.getText().toString().split("/");
+
+            if(Double.parseDouble(Place[0]) != 0.0 && Double.parseDouble(Place[1]) != 0.0) {
+
+                CameraPosition search =
+                        new CameraPosition.Builder().target(new LatLng(Double.parseDouble(Place[0]), Double.parseDouble(Place[1])))
+                                .zoom(15.5f)
+                                .bearing(300)
+                                .tilt(50)
+                                .build();
+
+                changeCamera(CameraUpdateFactory.newCameraPosition(search));
+            }
         }
 
         timeStart.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
@@ -104,20 +122,17 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         String[] Place = editPlace.getText().toString().split("/");
 
         switch (view.getId()) {
-            case R.id.search:
-                if(Double.parseDouble(Place[0]) == 0.0 && Double.parseDouble(Place[1]) == 0.0)
-                    break;
-                latLng = new LatLng(Double.parseDouble(Place[0]), Double.parseDouble(Place[1]));
-                break;
             case R.id.save:
                 myDBHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour+"", eHour+"",Place[0], Place[1], Memo);
                 finish();
+                Intent intentsave = new Intent(this, MainActivity.class);
+                startActivity(intentsave);
                 break;
             case R.id.cancel:
                 finish();
                 break;
             case R.id.delete:
-                //myDBHelper.delete(MainActivity.ClickPoint, sHour+"", eHour+"");
+                myDBHelper.delete(MainActivity.ClickPoint, sHour+"", eHour+"");
                 finish();
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
@@ -163,6 +178,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         if (animateToggle.isChecked()) {
             if (customDurationToggle.isChecked()) {
                 int duration = customDurationBar.getProgress();
+                // The duration must be strictly positive so we make it at least 1.
                 map.animateCamera(update, Math.max(duration, 1), callback);
             } else {
                 map.animateCamera(update, callback);

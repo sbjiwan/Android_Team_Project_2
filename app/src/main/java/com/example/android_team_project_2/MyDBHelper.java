@@ -123,7 +123,15 @@ public class MyDBHelper extends SQLiteOpenHelper {
     public void delete(String date, String s_time, String e_time) {
         SQLiteDatabase db = getWritableDatabase();
 
-        db.execSQL("DELETE FROM Users WHERE Date = '" + date + "' AND " + "Start_time = '" + s_time + "' AND " + "End_time = '" + e_time +"';");
+        System.out.println("DELETE FROM "+ UserContract.Users.TABLE_NAME +
+                " WHERE " + UserContract.Users.KEY_DATE + " = '" + date +
+                "' AND " + UserContract.Users.KEY_START_TIME + " = '" + s_time +
+                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time +"';");
+
+        db.execSQL("DELETE FROM "+ UserContract.Users.TABLE_NAME +
+                " WHERE " + UserContract.Users.KEY_DATE + " = '" + date +
+                "' AND " + UserContract.Users.KEY_START_TIME + " = '" + s_time +
+                "' AND " + UserContract.Users.KEY_END_TIME + " = '" + e_time +"';");
     }
 
     public Cursor searchMonth(String searchDate) {
