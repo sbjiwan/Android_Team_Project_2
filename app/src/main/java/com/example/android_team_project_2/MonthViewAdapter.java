@@ -77,29 +77,27 @@ public class MonthViewAdapter extends BaseAdapter {
 
         myDBHelper = new MyDBHelper(convertView.getContext());
         Cursor cursor;
-        cursor = myDBHelper.searchMonth(year+"."+month);
+        cursor = myDBHelper.searchMonth(year + "." + month);
 
         int cursorc = 0;
 
         while (cursor.moveToNext()) {
-            if(check == 0)
+            if (check == 0)
                 break;
             String Date = cursor.getString(2);
-            if(Date.equals(year + "." + month + "." + my_date_months.get(position).date)) {
-                if(cursorc == 0) {
+            if (Date.equals(year + "." + month + "." + my_date_months.get(position).date)) {
+                if (cursorc == 0) {
                     tv_sc1.setText(cursor.getString(1));
                     tv_sc1.setVisibility(View.VISIBLE);
-                    cursorc ++;
-                }
-                else if(cursorc == 1) {
+                    cursorc++;
+                } else if (cursorc == 1) {
                     tv_sc2.setText(cursor.getString(1));
                     tv_sc2.setVisibility(View.VISIBLE);
-                    cursorc ++;
-                }
-                else if(cursorc == 2){
+                    cursorc++;
+                } else if (cursorc == 2) {
                     tv_sc3.setText(cursor.getString(1));
                     tv_sc3.setVisibility(View.VISIBLE);
-                    cursorc ++;
+                    cursorc++;
                     break;
                 }
             }
@@ -144,57 +142,56 @@ public class MonthViewAdapter extends BaseAdapter {
             int pixels = Realheight - statusBarHeight - contentTop - Th - bottomBarHeight;
             switch (cursorc) {
                 case 0:
-                    tv_date.setHeight(pixels/6);
+                    tv_date.setHeight(pixels / 6);
                     tv_sc1.setHeight(0);
                     tv_sc2.setHeight(0);
                     tv_sc3.setHeight(0);
                     break;
                 case 1:
-                    tv_date.setHeight(pixels/12);
-                    tv_sc1.setHeight(pixels/12);
+                    tv_date.setHeight(pixels / 12);
+                    tv_sc1.setHeight(pixels / 12);
                     tv_sc2.setHeight(0);
                     tv_sc3.setHeight(0);
                     break;
                 case 2:
-                    tv_date.setHeight(pixels/18);
-                    tv_sc1.setHeight(pixels/18);
-                    tv_sc2.setHeight(pixels/18);
+                    tv_date.setHeight(pixels / 18);
+                    tv_sc1.setHeight(pixels / 18);
+                    tv_sc2.setHeight(pixels / 18);
                     tv_sc3.setHeight(0);
                     break;
                 case 3:
-                    tv_date.setHeight(pixels/24);
-                    tv_sc1.setHeight(pixels/24);
-                    tv_sc2.setHeight(pixels/24);
-                    tv_sc3.setHeight(pixels/24);
+                    tv_date.setHeight(pixels / 24);
+                    tv_sc1.setHeight(pixels / 24);
+                    tv_sc2.setHeight(pixels / 24);
+                    tv_sc3.setHeight(pixels / 24);
                     break;
             }
-        }
-        else if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        } else if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             int pixels = Realheight - statusBarHeight - contentTop - Th;
             switch (cursorc) {
                 case 0:
-                    tv_date.setHeight(pixels/6);
+                    tv_date.setHeight(pixels / 6);
                     tv_sc1.setHeight(0);
                     tv_sc2.setHeight(0);
                     tv_sc3.setHeight(0);
                     break;
                 case 1:
-                    tv_date.setHeight(pixels/12);
-                    tv_sc1.setHeight(pixels/12);
+                    tv_date.setHeight(pixels / 12);
+                    tv_sc1.setHeight(pixels / 12);
                     tv_sc2.setHeight(0);
                     tv_sc3.setHeight(0);
                     break;
                 case 2:
-                    tv_date.setHeight(pixels/18);
-                    tv_sc1.setHeight(pixels/18);
-                    tv_sc2.setHeight(pixels/18);
+                    tv_date.setHeight(pixels / 18);
+                    tv_sc1.setHeight(pixels / 18);
+                    tv_sc2.setHeight(pixels / 18);
                     tv_sc3.setHeight(0);
                     break;
                 case 3:
-                    tv_date.setHeight(pixels/24);
-                    tv_sc1.setHeight(pixels/24);
-                    tv_sc2.setHeight(pixels/24);
-                    tv_sc3.setHeight(pixels/24);
+                    tv_date.setHeight(pixels / 24);
+                    tv_sc1.setHeight(pixels / 24);
+                    tv_sc2.setHeight(pixels / 24);
+                    tv_sc3.setHeight(pixels / 24);
                     break;
             }
         }

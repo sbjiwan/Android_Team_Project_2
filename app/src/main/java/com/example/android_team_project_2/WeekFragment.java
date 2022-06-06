@@ -37,6 +37,7 @@ public class WeekFragment extends Fragment {
 
         Bundle bundle = getArguments();
 
+        assert bundle != null;
         page = Integer.MAX_VALUE / 2 - bundle.getInt("position");
 
         GridView week_grid = rootView.findViewById(R.id.week_grid);
@@ -170,13 +171,12 @@ public class WeekFragment extends Fragment {
 
                 view.findViewById(R.id.hour_textView).setBackgroundColor(Color.CYAN);
 
-                if(My_week_grid.get(i%7).date > 100) {
+                if (My_week_grid.get(i % 7).date > 100) {
                     Toast.makeText(activity, (My_week_grid.get(i % 7).date - 100) + "일 " + i / 7 + "시", Toast.LENGTH_SHORT).show();
-                    MainActivity.ClickPoint = year +"." + month +"." + (My_week_grid.get(i % 7).date - 100);
-                }
-                else {
+                    MainActivity.ClickPoint = year + "." + month + "." + (My_week_grid.get(i % 7).date - 100);
+                } else {
                     Toast.makeText(activity, My_week_grid.get(i % 7).date + "일 " + i / 7 + "시", Toast.LENGTH_SHORT).show();
-                    MainActivity.ClickPoint = year +"." + month +"." + (My_week_grid.get(i % 7).date);
+                    MainActivity.ClickPoint = year + "." + month + "." + (My_week_grid.get(i % 7).date);
                 }
 
 

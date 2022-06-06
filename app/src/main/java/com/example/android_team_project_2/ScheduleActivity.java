@@ -1,5 +1,6 @@
 package com.example.android_team_project_2;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -34,6 +35,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.MessageFormat;
+
 public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap mGoogleMap = null;
     private MyDBHelper mDbHelper;
@@ -50,6 +53,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map); // 구글맵 프래그먼트 생성
+        assert mapFragment != null;
         mapFragment.getMapAsync(ScheduleActivity.this);
 
         intent = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
@@ -65,13 +69,13 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         Intent intent = getIntent();
         key = intent.getIntExtra("selected", -1);
-        if(key != -1) {
+        if (key != -1) {
             Cursor cursor = mDbHelper.getAllUsersByMethod();
 
             cursor.moveToPosition(key);
 
             editTitle.setText(cursor.getString(1));
-            editPlace.setText(cursor.getString(5) + "/" + cursor.getString(6));
+            editPlace.setText(MessageFormat.format("{0}/{1}", cursor.getString(5), cursor.getString(6)));
             editMemo.setText(cursor.getString(7));
 
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
@@ -84,9 +88,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onTimeChanged(TimePicker timePicker, int h, int m) {
                 sHour = h;
-                if(sHour <= 22)
+                if (sHour <= 22)
                     timeEnd.setHour(h + 1);
-                else if(sHour == 23)
+                else if (sHour == 23)
                     timeEnd.setHour(0);
                 timeEnd.setMinute(m);
             }
@@ -96,9 +100,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             @Override
             public void onTimeChanged(TimePicker timePicker, int h, int m) {
                 eHour = h;
-                if(eHour >= 1)
+                if (eHour >= 1)
                     timeStart.setHour(h - 1);
-                else if(eHour == 0)
+                else if (eHour == 0)
                     timeStart.setHour(23);
                 timeEnd.setMinute(m);
             }
@@ -115,23 +119,23 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
     @SuppressLint("Range")
     @Override
-    public void onMapReady(GoogleMap googleMap) { // 이전 프래그먼트에서 받아온 데이터에 해당하는 데이터베이스에 저장된 주소로 구글맵을 이동
+    public void onMapReady(@NonNull GoogleMap googleMap) { // 이전 프래그먼트에서 받아온 데이터에 해당하는 데이터베이스에 저장된 주소로 구글맵을 이동
         mGoogleMap = googleMap;
         Cursor cursor = mDbHelper.getAllUsersByMethod();
-        if(key == -1) {
+        if (key == -1) {
             defaultMapReady();
             return;
         }
         cursor.moveToPosition(key);
 
-        if(Double.parseDouble(cursor.getString(6)) == 0.0 && Double.parseDouble(cursor.getString(6)) == 0.0) {
+        if (Double.parseDouble(cursor.getString(6)) == 0.0 && Double.parseDouble(cursor.getString(6)) == 0.0) {
             defaultMapReady();
             return;
         }
 
         LatLng location = new LatLng(Double.parseDouble(cursor.getString(5)), Double.parseDouble(cursor.getString(6)));
 
-        if(marker != null)
+        if (marker != null)
             marker.remove();
 
         mGoogleMap.addMarker(new MarkerOptions().position(location));
@@ -140,7 +144,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     }
 
     public void defaultMapReady() {
-        if(marker != null)
+        if (marker != null)
             marker.remove();
 
         marker = mGoogleMap.addMarker(marker_hansung);
@@ -152,7 +156,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editText = (EditText) findViewById(R.id.editPlace);
         String[] Locate = editText.getText().toString().split("/");
 
-        if(marker != null)
+        if (marker != null)
             marker.remove();
 
         LatLng location = new LatLng(Double.parseDouble(Locate[0]), Double.parseDouble(Locate[1]));
@@ -171,14 +175,14 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         String Memo = editMemo.getText().toString();
         String[] Place = editPlace.getText().toString().split("/");
 
-        mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour+"", eHour+"",Place[0], Place[1], Memo);
+        mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place[0], Place[1], Memo);
         finish();
         Intent intent_save = new Intent(this, MainActivity.class);
         startActivity(intent_save);
     }
 
     public void deleteRecord(View view) { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
-        mDbHelper.delete(MainActivity.ClickPoint, sHour+"", eHour+"");
+        mDbHelper.delete(MainActivity.ClickPoint, sHour + "", eHour + "");
         finish();
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
