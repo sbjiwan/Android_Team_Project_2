@@ -169,7 +169,6 @@ public class MainActivity extends AppCompatActivity {
                     if(cursor.getString(2).equals(ClickPoint)) {
                         buffer.append(cursor.getString(2));
                         CursorPoint[cursor_key ++] = date_key;
-
                     }
                     date_key ++;
                 }
@@ -195,6 +194,10 @@ public class MainActivity extends AppCompatActivity {
                     });
                     AlertDialog alertDialog = builder.create();
                     alertDialog.show();
+                }
+                else if(cursor_key == 1) {
+                    intent_month.putExtra("selected", CursorPoint[0]);
+                    startActivity(intent_month);
                 }
                 else
                     startActivity(intent_month);
