@@ -98,8 +98,6 @@ public class WeekFragment extends Fragment {
         week_grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Activity activity = getActivity();
-
                 if (test > 0) {
                     My_week_grid.remove(xPosition % 7);
                     if (test > 100)

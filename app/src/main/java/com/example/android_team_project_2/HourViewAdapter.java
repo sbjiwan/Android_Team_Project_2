@@ -118,8 +118,6 @@ public class HourViewAdapter extends BaseAdapter {
             String Time = cursor.getString(3);
             if(Date.equals(year + "." + month + "." + My_week_grid.get(position%7).date) && Time.equals(position/7+""))
                 tv_date.setText(cursor.getString(1));
-
-            System.out.println(My_week_grid.get(position%7).date);
         }
 
         if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {

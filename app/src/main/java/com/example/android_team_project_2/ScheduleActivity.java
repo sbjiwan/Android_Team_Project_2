@@ -40,9 +40,11 @@ import java.text.MessageFormat;
 public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap mGoogleMap = null;
     private MyDBHelper mDbHelper;
-    Intent intent;
+    Intent intent_load;
+    Intent intent_save;
     int key, sHour = 0, eHour = 0;
-    String type = "";
+    int Position;
+    String type;
     private LatLng hansung = new LatLng(37.5822608, 127.0094254);
     private MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
     private Marker marker;
@@ -57,7 +59,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         assert mapFragment != null;
         mapFragment.getMapAsync(ScheduleActivity.this);
 
-        intent = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
+        intent_load = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
         mDbHelper = new MyDBHelper(this); // 데이터베이스 생성
 
         TimePicker timeStart = findViewById(R.id.timeStart);
@@ -68,8 +70,23 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editMemo = (EditText) findViewById(R.id.editMemo);
         editTitle.setHint(MainActivity.ClickPoint);
 
-        type = intent.getStringExtra("type");
-        key = intent.getIntExtra("selected", -1);
+        intent_save = new Intent(this, MainActivity.class);
+
+        type = intent_load.getStringExtra("type");
+        intent_save.putExtra("type", type);
+
+        if(type.equals("month")) {
+            Position = intent_load.getIntExtra("Month_Position", Integer.MAX_VALUE / 2);
+            intent_save.putExtra("Month_Position", Position);
+        }
+
+        else if(type.equals("week")) {
+            Position = intent_load.getIntExtra("Week_Position", Integer.MAX_VALUE / 2);
+            intent_save.putExtra("Week_Position", Position + 1);
+        }
+
+        key = intent_load.getIntExtra("selected", -1);
+
         if (key != -1) {
             Cursor cursor = mDbHelper.getAllUsersByMethod();
 
@@ -81,12 +98,14 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
             timeStart.setMinute(0);
+            sHour = Integer.parseInt(cursor.getString(3));
             timeEnd.setHour(Integer.parseInt(cursor.getString(4)));
             timeEnd.setMinute(0);
+            eHour = Integer.parseInt(cursor.getString(4));
         }
 
         else {
-            int time = intent.getIntExtra("time", 0);
+            int time = intent_load.getIntExtra("time", 0);
             timeStart.setHour(time);
             sHour = time;
             timeStart.setMinute(0);
@@ -188,16 +207,12 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place[0], Place[1], Memo);
         finish();
-        Intent intent_save = new Intent(this, MainActivity.class);
-        intent_save.putExtra("type", type);
         startActivity(intent_save);
     }
 
     public void deleteRecord(View view) { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
         mDbHelper.delete(MainActivity.ClickPoint, sHour + "", eHour + "");
         finish();
-        Intent intent_delete = new Intent(this, MainActivity.class);
-        intent_delete.putExtra("type", type);
-        startActivity(intent_delete);
+        startActivity(intent_save);
     }
 }

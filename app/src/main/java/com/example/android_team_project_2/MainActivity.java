@@ -19,9 +19,9 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     int MonthPoint = Integer.MAX_VALUE / 2;
+    int WeekPoint = Integer.MAX_VALUE / 2;
     int year, month, date, dow;
-    int WeekPoint = 0, fmonth = 0;
-    int monthPage = 0, weekPage = 0;
+    int  WeekCheck = 0, fmonth = 0, monthPage = 0, weekPage = 0;
     static String ClickPoint = "";
     static int[] CursorPoint;
     MyDBHelper myDBHelper;
@@ -38,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
         intent = getIntent();
 
         if(intent != null) {
-            MonthPoint = intent.getIntExtra("position", Integer.MAX_VALUE / 2);
+            MonthPoint = intent.getIntExtra("Month_Position", Integer.MAX_VALUE / 2);
+            WeekPoint = intent.getIntExtra("Week_Position", Integer.MAX_VALUE / 2);
             name = intent.getStringExtra("type");
         }
 
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             FragmentStateAdapter adapter2 = new WeekPagerAdapter(this);
             vpPager2.setAdapter(adapter2);
 
-            vpPager2.setCurrentItem(Integer.MAX_VALUE / 2, false);
+            vpPager2.setCurrentItem(WeekPoint, false);
 
             vpPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                 @Override
@@ -105,13 +106,13 @@ public class MainActivity extends AppCompatActivity {
 
                     if (date - dow + 1 <= 0) {
                         setTitle(year + "년 " + (month - 1) + "월 / " + month + "월");
-                        WeekPoint = fmonth - month;
+                        WeekCheck = fmonth - month;
                     } else if (date - dow + 7 > calendar.getActualMaximum(Calendar.DATE)) {
                         setTitle(year + "년 " + month + "월 / " + (month + 1) + "월");
-                        WeekPoint = fmonth - month + 1;
+                        WeekCheck = fmonth - month + 1;
                     } else {
                         setTitle(year + "년 " + month + "월");
-                        WeekPoint = fmonth - month;
+                        WeekCheck = fmonth - month;
                     }
                 }
             });
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 FragmentStateAdapter adapter1 = new MonthPagerAdapter(this);
                 vpPager1.setAdapter(adapter1);
 
-                vpPager1.setCurrentItem(MonthPoint - WeekPoint, false);
+                vpPager1.setCurrentItem(MonthPoint - WeekCheck, false);
 
                 vpPager1.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                     @Override
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 FragmentStateAdapter adapter2 = new WeekPagerAdapter(this);
                 vpPager2.setAdapter(adapter2);
 
-                vpPager2.setCurrentItem(Integer.MAX_VALUE / 2, false);
+                vpPager2.setCurrentItem(WeekPoint, false);
 
                 vpPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                     @Override
@@ -194,13 +195,13 @@ public class MainActivity extends AppCompatActivity {
 
                         if (date - dow + 1 <= 0) {
                             setTitle(year + "년 " + (month - 1) + "월 / " + month + "월");
-                            WeekPoint = fmonth - month;
+                            WeekCheck = fmonth - month;
                         } else if (date - dow + 7 > calendar.getActualMaximum(Calendar.DATE)) {
                             setTitle(year + "년 " + month + "월 / " + (month + 1) + "월");
-                            WeekPoint = fmonth - month + 1;
+                            WeekCheck = fmonth - month + 1;
                         } else {
                             setTitle(year + "년 " + month + "월");
-                            WeekPoint = fmonth - month;
+                            WeekCheck = fmonth - month;
                         }
                     }
                 });
@@ -218,6 +219,9 @@ public class MainActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.floatingMonth:
                 Intent intent_month = new Intent(this, ScheduleActivity.class);
+
+                intent_month.putExtra("type", "month");
+                intent_month.putExtra("Month_Position", MonthPoint);
 
                 if (myDBHelper == null)
                     startActivity(intent_month);
@@ -257,30 +261,34 @@ public class MainActivity extends AppCompatActivity {
                 } else
                     startActivity(intent_month);
                 break;
+
             case R.id.floatingWeek:
                 Intent intent_week = new Intent(this, ScheduleActivity.class);
 
                 intent_week.putExtra("type", "week");
+                intent_week.putExtra("time", WeekFragment.Clicktime);
+                intent_week.putExtra("Week_Position", WeekPoint);
 
                 if(myDBHelper == null)
                     startActivity(intent_week);
 
+
                 cursor = myDBHelper.getAllUsersBySQL();
 
-                int time_key = 0;
+                int time_key = 0, time_count = 0;
+
                 while (cursor.moveToNext()) {
                     if(cursor.getString(2).equals(ClickPoint) && cursor.getString(3).equals(WeekFragment.Clicktime+"")) {
-                        intent_week.putExtra("selected", time_key ++);
+                        intent_week.putExtra("selected", time_count);
+                        startActivity(intent_week);
+                        time_key ++;
+                        break;
                     }
+                    time_count ++;
                 }
 
                 if(time_key == 0)
-                    intent_week.putExtra("time", WeekFragment.Clicktime);
-
-                startActivity(intent_week);
-
-                //표시 내용 추가
-
+                    startActivity(intent_week);
                 break;
         }
     }
