@@ -17,10 +17,10 @@ import java.util.Calendar;
 
 public class HourViewAdapter extends BaseAdapter {
 
-    private Context mContext;
-    private int mResource;
-    private ArrayList<My_date_hour> my_date_hours;
-    private Activity mActivity;
+    private final Context mContext;
+    private final int mResource;
+    private final ArrayList<My_date_hour> my_date_hours;
+    private final Activity mActivity;
     MyDBHelper myDBHelper;
     int year, month, date, xdate, dow, fmonth;
 
@@ -107,7 +107,7 @@ public class HourViewAdapter extends BaseAdapter {
         int height = metrics.heightPixels;
 
         if ((my_date_hours.get(position).hour) > -1)
-            tv_date.setText(my_date_hours.get(position).hour + "");
+            tv_date.setText(my_date_hours.get(position).hour);
         else
             tv_date.setText(" ");
 
@@ -118,8 +118,6 @@ public class HourViewAdapter extends BaseAdapter {
             String Time = cursor.getString(3);
             if(Date.equals(year + "." + month + "." + My_week_grid.get(position%7).date) && Time.equals(position/7+""))
                 tv_date.setText(cursor.getString(1));
-
-            System.out.println(My_week_grid.get(position%7).date);
         }
 
         if (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
