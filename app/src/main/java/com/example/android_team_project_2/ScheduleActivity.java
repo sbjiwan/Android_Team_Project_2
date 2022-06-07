@@ -82,18 +82,15 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
             timeStart.setMinute(0);
             timeEnd.setHour(Integer.parseInt(cursor.getString(4)));
-            timeEnd.setMinute(0);
-        }
-
-        else {
+        } else {
             int time = intent.getIntExtra("time", 0);
             timeStart.setHour(time);
             sHour = time;
             timeStart.setMinute(0);
             timeEnd.setHour(time + 1);
             eHour = time + 1;
-            timeEnd.setMinute(0);
         }
+        timeEnd.setMinute(0);
 
         timeStart.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
             @Override
