@@ -5,8 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 class MonthPagerAdapter extends FragmentStateAdapter {
@@ -25,10 +23,6 @@ class MonthPagerAdapter extends FragmentStateAdapter {
         bundle.putInt("position", position);
         monthFragment.setArguments(bundle);
         return monthFragment;
-    }
-
-    public MonthPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
-        super(fragmentManager, lifecycle);
     }
 
     // 전체 페이지 개수 반환

@@ -1,21 +1,36 @@
 package com.example.android_team_project_2;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.AbstractCursor;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -25,13 +40,11 @@ import java.text.MessageFormat;
 public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap mGoogleMap = null;
     private MyDBHelper mDbHelper;
-    Intent intent_load;
-    Intent intent_save;
+    Intent intent;
     int key, sHour = 0, eHour = 0;
-    int Position;
-    String type;
-    private final LatLng hansung = new LatLng(37.5822608, 127.0094254);
-    private final MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
+    String type = "";
+    private LatLng hansung = new LatLng(37.5822608, 127.0094254);
+    private MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
     private Marker marker;
 
     @Override
@@ -44,7 +57,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         assert mapFragment != null;
         mapFragment.getMapAsync(ScheduleActivity.this);
 
-        intent_load = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
+        intent = getIntent(); // 이전 프래그먼트로부터 데이터를 받아온다
         mDbHelper = new MyDBHelper(this); // 데이터베이스 생성
 
         TimePicker timeStart = findViewById(R.id.timeStart);
@@ -55,26 +68,8 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         EditText editMemo = (EditText) findViewById(R.id.editMemo);
         editTitle.setHint(MainActivity.ClickPoint);
 
-        String[] date = String.valueOf(MainActivity.ClickPoint).split("[.]");
-        setTitle(date[0] + "년 " + date[1] + "월 " + date[2] + "일");
-
-        intent_save = new Intent(this, MainActivity.class);
-
-        type = intent_load.getStringExtra("type");
-        intent_save.putExtra("type", type);
-
-        if(type.equals("month")) {
-            Position = intent_load.getIntExtra("Month_Position", Integer.MAX_VALUE / 2);
-            intent_save.putExtra("Month_Position", Position);
-        }
-
-        else if(type.equals("week")) {
-            Position = intent_load.getIntExtra("Week_Position", Integer.MAX_VALUE / 2);
-            intent_save.putExtra("Week_Position", Position + 1);
-        }
-
-        key = intent_load.getIntExtra("selected", -1);
-
+        type = intent.getStringExtra("type");
+        key = intent.getIntExtra("selected", -1);
         if (key != -1) {
             Cursor cursor = mDbHelper.getAllUsersByMethod();
 
@@ -86,19 +81,9 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
             timeStart.setHour(Integer.parseInt(cursor.getString(3)));
             timeStart.setMinute(0);
-            sHour = Integer.parseInt(cursor.getString(3));
             timeEnd.setHour(Integer.parseInt(cursor.getString(4)));
-<<<<<<< HEAD
         } else {
             int time = intent.getIntExtra("time", 0);
-=======
-            timeEnd.setMinute(0);
-            eHour = Integer.parseInt(cursor.getString(4));
-        }
-
-        else {
-            int time = intent_load.getIntExtra("time", 0);
->>>>>>> adb2f0b95f8f188424c0ec434064f3c979c015c7
             timeStart.setHour(time);
             sHour = time;
             timeStart.setMinute(0);
@@ -107,26 +92,37 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         }
         timeEnd.setMinute(0);
 
-        timeStart.setOnTimeChangedListener((timePicker, h, m) -> {
-            sHour = h;
-            if (sHour <= 22)
-                timeEnd.setHour(h + 1);
-            else if (sHour == 23)
-                timeEnd.setHour(0);
-            timeEnd.setMinute(m);
+        timeStart.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+            @Override
+            public void onTimeChanged(TimePicker timePicker, int h, int m) {
+                sHour = h;
+                if (sHour <= 22)
+                    timeEnd.setHour(h + 1);
+                else if (sHour == 23)
+                    timeEnd.setHour(0);
+                timeEnd.setMinute(m);
+            }
         });
 
-        timeEnd.setOnTimeChangedListener((timePicker, h, m) -> {
-            eHour = h;
-            if (eHour >= 1)
-                timeStart.setHour(h - 1);
-            else if (eHour == 0)
-                timeStart.setHour(23);
-            timeEnd.setMinute(m);
+        timeEnd.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+            @Override
+            public void onTimeChanged(TimePicker timePicker, int h, int m) {
+                eHour = h;
+                if (eHour >= 1)
+                    timeStart.setHour(h - 1);
+                else if (eHour == 0)
+                    timeStart.setHour(23);
+                timeEnd.setMinute(m);
+            }
         });
 
         Button cancel = (Button) findViewById(R.id.cancel);
-        cancel.setOnClickListener(v -> finish()); // 취소 버튼 클릭 시 액티비티를 종료
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        }); // 취소 버튼 클릭 시 액티비티를 종료
     }
 
     @SuppressLint("Range")
@@ -189,12 +185,16 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         mDbHelper.insertUserByMethod(Title, MainActivity.ClickPoint, sHour + "", eHour + "", Place[0], Place[1], Memo);
         finish();
+        Intent intent_save = new Intent(this, MainActivity.class);
+        intent_save.putExtra("type", type);
         startActivity(intent_save);
     }
 
     public void deleteRecord(View view) { // 삭제 버튼을 누르면 해당 데이터에 적힌 데이터를 SQL에서 삭제
         mDbHelper.delete(MainActivity.ClickPoint, sHour + "", eHour + "");
         finish();
-        startActivity(intent_save);
+        Intent intent_delete = new Intent(this, MainActivity.class);
+        intent_delete.putExtra("type", type);
+        startActivity(intent_delete);
     }
 }
