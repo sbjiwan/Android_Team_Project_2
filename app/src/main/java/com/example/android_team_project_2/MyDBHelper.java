@@ -99,6 +99,7 @@ public class MyDBHelper extends SQLiteOpenHelper {
         }
     }
 
+
     public long insertUserByMethod(String title, String date, String s_time, String e_time, String place_x, String place_y, String memo) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
