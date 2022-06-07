@@ -28,11 +28,14 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
     Intent intent;
     int key, sHour = 0, eHour = 0;
 <<<<<<< HEAD
+<<<<<<< HEAD
     int Position;
     String type;
     private final LatLng hansung = new LatLng(37.5822608, 127.0094254);
     private final MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
 =======
+=======
+>>>>>>> parent of 85ba184 (WeekSchedule +)
     String type = "";
     private LatLng hansung = new LatLng(37.5822608, 127.0094254);
     private MarkerOptions marker_hansung = new MarkerOptions().position(hansung);
@@ -61,6 +64,7 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
         editTitle.setHint(MainActivity.ClickPoint);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         String[] date = String.valueOf(MainActivity.ClickPoint).split("[.]");
         setTitle(date[0] + "년 " + date[1] + "월 " + date[2] + "일");
 
@@ -81,6 +85,10 @@ public class ScheduleActivity extends AppCompatActivity implements OnMapReadyCal
 
         key = intent_load.getIntExtra("selected", -1);
 
+=======
+        type = intent.getStringExtra("type");
+        key = intent.getIntExtra("selected", -1);
+>>>>>>> parent of 85ba184 (WeekSchedule +)
 =======
         type = intent.getStringExtra("type");
         key = intent.getIntExtra("selected", -1);
